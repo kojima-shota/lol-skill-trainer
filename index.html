@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LoL スキルミクロ練習</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #0a1c28;
+            overflow: hidden;
+        }
+        canvas {
+            border: 3px solid #c8aa6e;
+            box-shadow: 0 0 20px rgba(200, 170, 110, 0.7);
+            /* 右クリック時のコンテキストメニューを抑制するためのスタイル (直接的な効果はないが、念のため) */
+            user-select: none; /* テキスト選択なども防ぐ */
+        }
+    </style>
+</head>
+<body>
+    <div id="phaser-game"></div>
+    <script src="js/main.js" type="module"></script>
+
+    <!-- ↓↓↓ このスクリプトを追加 ↓↓↓ -->
+    <script>
+        // Phaserのゲームが初期化され、canvasがDOMに追加された後に実行されるようにする
+        window.onload = () => {
+            const gameContainer = document.getElementById('phaser-game');
+            if (gameContainer) {
+                // Phaserがcanvasを生成するのを少し待つ (より確実な方法としてはPhaserのイベントを使う)
+                setTimeout(() => {
+                    const canvas = gameContainer.querySelector('canvas');
+                    if (canvas) {
+                        canvas.addEventListener('contextmenu', function(event) {
+                            event.preventDefault(); // デフォルトのコンテキストメニュー表示をキャンセル
+                        });
+                        console.log("Context menu prevention applied to Phaser canvas.");
+                    } else {
+                        console.warn("Phaser canvas not found for context menu prevention.");
+                    }
+                }, 500); // 500ミリ秒待つ (必要に応じて調整)
+            }
+        };
+    </script>
+    <!-- ↑↑↑ このスクリプトを追加 ↑↑↑ -->
+</body>
+</html>
