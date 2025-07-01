@@ -13,6 +13,7 @@ export default class GameOverScene extends Phaser.Scene {
     }
 
     create() {
+        
         // キーボード入力を有効にする (もし前のシーンで無効化されていた場合)
         if (this.input && this.input.keyboard && !this.input.keyboard.enabled) {
             this.input.keyboard.enabled = true;

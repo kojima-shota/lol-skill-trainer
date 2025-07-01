@@ -11,7 +11,6 @@ const FLASH_COOLDOWN = 5000;
 const INITIAL_SPAWN_RATE = 1200; // ★ これがエラーの原因
 const MIN_SPAWN_RATE = 250;
 const DIFFICULTY_INCREASE_INTERVAL = 2000;
-const PLAYER_COLOR = 0x3498db;
 const SPAWN_RATE_DECREMENT = 50;
 const BULLET_SPEED_INCREASE = 10;
 const ENEMY_DETECTION_RANGE = 250;
@@ -131,7 +130,7 @@ export default class GameScene extends Phaser.Scene {
     this.flashKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.F);
 
         // --- 衝突判定 ---
-        this.physics.add.overlap(this.player, this.bullets, this.playerHitBullet, null, this);
+        his.physics.add.overlap(this.player, this.bullets, this.playerHitBullet, null, this);
         // this.physics.add.overlap(this.player, this.enemies, this.playerHitByEnemyBody, null, this); // 任意
 
         // --- タイマー設定 ---
