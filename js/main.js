@@ -1,3 +1,4 @@
+
 import BootScene from './scenes/BootScene.js';
 import TitleScene from './scenes/TitleScene.js';
 import GameScene from './scenes/GameScene.js';

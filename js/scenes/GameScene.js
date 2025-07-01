@@ -1,3 +1,4 @@
+
 // GameScene.js
 import Enemy from './Enemy.js'; // Enemy.jsのパスを確認
 // ... (他の定数) ...
@@ -397,3 +398,4 @@ class Bullet extends Phaser.Physics.Arcade.Sprite {
 }
 
 // Enemyクラスは Enemy.js からインポートされる想定なので、ここでは不要
+

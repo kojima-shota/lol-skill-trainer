@@ -1,3 +1,4 @@
+
 const DEFEAT_TEXT_COLOR = '#e84118'; // LoLの「敗北」のような赤色
 
 export default class GameOverScene extends Phaser.Scene {
