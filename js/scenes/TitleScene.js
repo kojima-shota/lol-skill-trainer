@@ -66,20 +66,27 @@ export default class TitleScene extends Phaser.Scene {
         console.log("TitleScene: Original create finished. Waiting for input to start game.");
     }
 
-    startGame() {
-        console.log("TitleScene: startGame called");
-        if (this.startGamePointerHandler) this.input.off('pointerdown', this.startGamePointerHandler, this);
-        if (this.startGameSpaceKeyHandler) this.input.keyboard.off('keydown-SPACE', this.startGameSpaceKeyHandler, this);
-        if (this.startGameEnterKeyHandler) this.input.keyboard.off('keydown-ENTER', this.startGameEnterKeyHandler, this);
+   // TitleScene.js
+startGame() {
+    // ... (他のリスナー解除やトゥイーン停止処理) ...
 
-        if (this.startTextTween && this.startTextTween.isPlaying()) {
-            this.startTextTween.stop();
-        }
+    // ★★★ UIScene も start で再起動する ★★★
+    // GameScene を開始し、UIScene をその上に並行して開始する
+    // start は create を毎回呼び出すので、UI要素が確実に再作成される
+    this.scene.start('GameScene');
+    this.scene.start('UIScene'); // launch ではなく start を使う
 
-        this.scene.start('GameScene');
-        this.scene.launch('UIScene');
-        this.scene.stop('TitleScene');
-    }
+    // または、launch を使いたい場合は、必ず stop してから launch する
+    // if (this.scene.manager.isActive('UIScene')) {
+    //     this.scene.stop('UIScene');
+    // }
+    // this.scene.start('GameScene');
+    // this.scene.launch('UIScene');
+    // → しかし、この場合でも wake で create が呼ばれない問題が残る可能性があるため、
+    //   両方 start するのが一番確実。
+
+    this.scene.stop('TitleScene'); // 最後に自分を停止
+}
 
     shutdown() {
         console.log("TitleScene shutdown");

@@ -1,44 +1,72 @@
 // Enemy.js
-// export default をつけると GameScene.js で import Enemy from './Enemy.js'; できる
+
+// --- 敵の色候補を定数として定義 ---
+const ENEMY_COLORS = [
+    0xff0000, // 赤
+    0xff7f00, // オレンジ
+    0x00ff00, // 緑
+    0x0000ff, // 青
+    0x4b0082, // インディゴ
+    0x9400d3, // 紫
+];
+
+// --- 他の定数 ---
+const ENEMY_DETECTION_RANGE = 250;
+const ENEMY_SKILL_CAST_TIME = 1000;
+const ENEMY_SKILL_COOLDOWN = 3000;
+
 export default class Enemy extends Phaser.Physics.Arcade.Sprite {
     constructor(scene, x, y, texture = 'enemyTexture') {
         super(scene, x, y, texture);
 
+        // 初期状態は非アクティブ・非表示
         this.setActive(false);
         this.setVisible(false);
 
+        // GameSceneへの参照
         this.player = scene.player;
         this.bulletsGroup = scene.bullets;
 
-        // --- ★★★ 定数を直接ここで使用 ★★★ ---
-        this.detectionRange = 250; // ENEMY_DETECTION_RANGE の値を直接記述
-        this.skillCastTime = 1000;  // ENEMY_SKILL_CAST_TIME の値を直接記述
-        this.skillCooldown = 3000; // ENEMY_SKILL_COOLDOWN の値を直接記述
-
+        // スキル関連のプロパティ
+        this.detectionRange = ENEMY_DETECTION_RANGE;
+        this.skillCastTime = ENEMY_SKILL_CAST_TIME;
+        this.skillCooldown = ENEMY_SKILL_COOLDOWN;
         this.canCastSkill = true;
         this.isCasting = false;
         this.castTimer = null;
         this.cooldownTimer = null;
 
+        // 移動と色のプロパティ
         this.speed = 50;
-    
-    // ... 以降のメソッド (spawnSelf, update, etc.) ...
-}
+        this.originalColor = 0xffffff; // スポーン時に設定される元の色
+    }
 
     spawnSelf(x, y) {
-        // ... (このメソッド内ではdetectionRangeなどはthis経由で参照するので変更不要) ...
         this.enableBody(true, x, y, true, true);
         this.setActive(true);
         this.setVisible(true);
 
+        // スポーン時に物理特性を設定
         this.body.setCollideWorldBounds(true);
         this.body.setBounce(1);
         this.setDisplaySize(40, 40);
-        this.setTint(0xff0000);
 
+        // ★★★ 色をランダムに設定する処理 (デバッグ強化版) ★★★
+        this.originalColor = Phaser.Utils.Array.GetRandom(ENEMY_COLORS);
+        console.log(`Spawning enemy. Attempting to set tint to: 0x${this.originalColor.toString(16)}`);
+
+        // 既存のtintをクリアしてから新しいtintを設定
+        this.clearTint();
+        this.setTint(this.originalColor);
+
+        // tintが適用されたかプロパティを確認
+        console.log(`Tint property after set: 0x${this.tint.toString(16)}`);
+
+        // スキル状態をリセット
         this.canCastSkill = true;
         this.isCasting = false;
 
+        // 移動開始
         const initialAngle = Phaser.Math.FloatBetween(0, Math.PI * 2);
         if (this.body && this.scene.physics) {
             this.scene.physics.velocityFromRotation(initialAngle, this.speed, this.body.velocity);
@@ -49,7 +77,6 @@ export default class Enemy extends Phaser.Physics.Arcade.Sprite {
 
     update(time, delta) {
         if (!this.active || !this.player || !this.player.active) {
-            // もしactiveだがbodyがない場合も考慮
             if (this.active && this.body) this.body.setVelocity(0,0);
             return;
         }
@@ -59,7 +86,6 @@ export default class Enemy extends Phaser.Physics.Arcade.Sprite {
         if (this.canCastSkill && !this.isCasting && distanceToPlayer <= this.detectionRange) {
             this.startCastingSkill();
         }
-        // 他の移動ロジック
     }
 
     startCastingSkill() {
@@ -67,29 +93,30 @@ export default class Enemy extends Phaser.Physics.Arcade.Sprite {
 
         this.isCasting = true;
         this.canCastSkill = false;
-        if(this.body) this.body.setVelocity(0,0); // bodyが存在するか確認
-        this.setTint(0xffff00);
+        if(this.body) this.body.setVelocity(0,0);
 
-        console.log("Enemy is casting skill!");
+        // 詠唱中の色は黄色で固定
+        this.setTint(0xffff00);
 
         if (this.castTimer) this.castTimer.destroy();
         this.castTimer = this.scene.time.delayedCall(this.skillCastTime, () => {
-            if (!this.active) { // 詠唱完了前に敵が非アクティブ化された場合
+            if (!this.active) {
                 this.isCasting = false;
-                this.destroyTimers(); //念のためタイマーも破棄
+                this.destroyTimers();
                 return;
             }
             this.castSkill();
             this.isCasting = false;
-            this.setTint(0xff0000);
+
+            // ★★★ 詠唱前の元の色に戻す ★★★
+            this.setTint(this.originalColor);
 
             if (this.cooldownTimer) this.cooldownTimer.destroy();
             this.cooldownTimer = this.scene.time.delayedCall(this.skillCooldown, () => {
                 this.canCastSkill = true;
-                if(this.active) console.log("Enemy skill ready again!");
             }, [], this);
 
-            if (this.active && this.body && this.scene.physics) { // 再度移動開始
+            if (this.active && this.body && this.scene.physics) {
                 const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
                 this.scene.physics.velocityFromRotation(angle, this.speed, this.body.velocity);
             }
@@ -99,27 +126,21 @@ export default class Enemy extends Phaser.Physics.Arcade.Sprite {
     castSkill() {
         if (!this.active || !this.player || !this.player.active || !this.bulletsGroup) return;
 
-        console.log("Enemy casts skill!");
         const skillBullet = this.bulletsGroup.get();
         if (skillBullet) {
             const bulletSize = 25;
-            const bulletColor = 0x9400D3;
+            const bulletColor = 0x9400d3; // スキル弾の色は紫で固定
             const bulletSpeed = 280;
-            // Bulletクラスのspawnメソッドが存在し、正しい引数を取ることを確認
-            if (typeof skillBullet.spawn === 'function') {
-                skillBullet.spawn(this.x, this.y, bulletSize, bulletColor, this.player, bulletSpeed);
+            if (typeof skillBullet.spawnAsSkill === 'function') {
+                skillBullet.spawnAsSkill(this.x, this.y, bulletSize, bulletColor, this.player, bulletSpeed);
             } else {
-                console.error("skillBullet does not have a spawn method or it's not a function.");
-                // 代替処理またはエラー処理
-                skillBullet.setPosition(this.x, this.y);
-                skillBullet.setActive(true).setVisible(true);
-                // 手動で速度設定など
+                console.error("Enemy's castSkill: skillBullet does not have a spawnAsSkill method.");
+                skillBullet.destroy();
             }
         }
     }
 
     destroyTimers() {
-        console.log("Enemy: Destroying timers for", this);
         if (this.castTimer) {
             this.castTimer.destroy();
             this.castTimer = null;
@@ -130,16 +151,7 @@ export default class Enemy extends Phaser.Physics.Arcade.Sprite {
         }
     }
 
-    // SpriteがGroupからremoveされる時やdestroyされる時に呼ばれることがある
-    // PhaserのバージョンやGroupの設定による
-    // より確実に呼ばれるのは preDestroy
-    // disableBody(disableGameObject = true, hideGameObject = true) {
-    //     this.destroyTimers();
-    //     super.disableBody(disableGameObject, hideGameObject);
-    // }
-
     preDestroy() {
-        console.log("Enemy: preDestroy called for", this);
         this.destroyTimers();
         super.preDestroy();
     }

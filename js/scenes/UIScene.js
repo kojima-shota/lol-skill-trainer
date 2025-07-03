@@ -1,8 +1,7 @@
-
 // UIScene.js
 export default class UIScene extends Phaser.Scene {
     constructor() {
-        super({ key:'UIScene', active: false });
+        super({ key: 'UIScene', active: false });
         this.scoreText = null;
         this.flashCooldownText = null;
         this.flashStatusText = null;
@@ -31,44 +30,16 @@ export default class UIScene extends Phaser.Scene {
             fontSize: '18px', fill: '#ff0', fontFamily: 'Arial'
         }).setOrigin(1, 0);
 
-        // --- GameSceneからのイベントリスナー登録 ---
+        // --- GameSceneの準備完了イベントを待つ ---
         const gameScene = this.scene.get('GameScene');
-
-        if (gameScene && gameScene.events) { // gameScene と events の存在を確認
-            // リスナー関数をプロパティとして定義
-            this.updateScoreHandler = (score) => {
-                if (this.scoreText) { // UI要素が存在するか確認してから更新
-                    this.scoreText.setText('スコア: ' + score);
-                }
-            };
-            this.flashUsedHandler = (cooldown) => {
-                if (this.flashStatusText) {
-                    this.flashStatusText.setText('Flash: COOLDOWN').setColor('#f00');
-                }
-                this.currentFlashCooldown = cooldown / 1000;
-                this.updateFlashCooldownText();
-            };
-            this.flashReadyHandler = () => {
-                if (this.flashStatusText) {
-                    this.flashStatusText.setText('Flash: READY').setColor('#0f0');
-                }
-                if (this.flashCooldownText) {
-                    this.flashCooldownText.setText('');
-                }
-                this.currentFlashCooldown = 0;
-            };
-
-            // プロパティに保存したハンドラを使ってイベントをリッスン
-            gameScene.events.on('updateScore', this.updateScoreHandler, this);
-            gameScene.events.on('flashUsed', this.flashUsedHandler, this);
-            gameScene.events.on('flashReady', this.flashReadyHandler, this);
-
+        if (gameScene && gameScene.events) {
+            // 'gameReady' イベントを一度だけリッスンし、リスナー設定メソッドを呼び出す
+            gameScene.events.once('gameReady', this.setupGameEventListeners, this);
         } else {
-            console.warn("UIScene: GameScene or its event emitter not found on create. Events not registered.");
+            console.warn("UIScene: GameScene not found on create, cannot listen for 'gameReady'.");
         }
 
         // --- クールダウン表示用タイマー ---
-        // 既存のタイマーがあれば破棄 (シーン再起動時など)
         if (this.cooldownDisplayTimer) {
             this.cooldownDisplayTimer.destroy();
         }
@@ -80,6 +51,45 @@ export default class UIScene extends Phaser.Scene {
         });
     }
 
+    // ★★★ メソッドを create() の外、クラスの直下に定義 ★★★
+    setupGameEventListeners() {
+        console.log("UIScene: GameScene is ready, setting up event listeners.");
+        const gameScene = this.scene.get('GameScene');
+        if (!gameScene || !gameScene.events) {
+            console.warn("UIScene: GameScene not available for event setup.");
+            return;
+        }
+
+        // リスナー関数をプロパティとして定義
+        this.updateScoreHandler = (score) => {
+            if (this.scoreText) {
+                this.scoreText.setText('スコア: ' + score);
+            }
+        };
+        this.flashUsedHandler = (cooldown) => {
+            if (this.flashStatusText) {
+                this.flashStatusText.setText('Flash: COOLDOWN').setColor('#f00');
+            }
+            this.currentFlashCooldown = cooldown / 1000;
+            this.updateFlashCooldownText();
+        };
+        this.flashReadyHandler = () => {
+            if (this.flashStatusText) {
+                this.flashStatusText.setText('Flash: READY').setColor('#0f0');
+            }
+            if (this.flashCooldownText) {
+                this.flashCooldownText.setText('');
+            }
+            this.currentFlashCooldown = 0;
+        };
+
+        // プロパティに保存したハンドラを使ってイベントをリッスン
+        gameScene.events.on('updateScore', this.updateScoreHandler, this);
+        gameScene.events.on('flashUsed', this.flashUsedHandler, this);
+        gameScene.events.on('flashReady', this.flashReadyHandler, this);
+    }
+
+
     updateFlashCooldown() {
         if (this.currentFlashCooldown > 0) {
             this.currentFlashCooldown = Math.max(0, this.currentFlashCooldown - 0.1);
@@ -88,7 +98,7 @@ export default class UIScene extends Phaser.Scene {
     }
 
     updateFlashCooldownText() {
-        if (!this.flashCooldownText) return; // UI要素の存在確認
+        if (!this.flashCooldownText) return;
 
         if (this.currentFlashCooldown > 0) {
             this.flashCooldownText.setText(this.currentFlashCooldown.toFixed(1) + 's');
@@ -99,10 +109,14 @@ export default class UIScene extends Phaser.Scene {
 
     shutdown() {
         console.log("UIScene shutdown");
-        const gameScene = this.scene.get('GameScene'); // 再度取得を試みる
+        const gameScene = this.scene.get('GameScene');
 
         // --- GameSceneからのイベントリスナー解除 ---
-        if (gameScene && gameScene.events) { // gameScene と events の存在を確認
+        if (gameScene && gameScene.events) {
+            // 'gameReady' リスナーも解除 (onceなので通常は不要だが、念のため)
+            gameScene.events.off('gameReady', this.setupGameEventListeners, this);
+
+            // 各ハンドラも解除
             if (this.updateScoreHandler) {
                 gameScene.events.off('updateScore', this.updateScoreHandler, this);
             }
@@ -125,11 +139,11 @@ export default class UIScene extends Phaser.Scene {
             this.cooldownDisplayTimer = null;
         }
 
-        // --- UI要素の破棄 (シーン破棄時に自動で行われるが、明示的に行うとより確実) ---
+        // --- UI要素の破棄 ---
         if (this.scoreText) { this.scoreText.destroy(); this.scoreText = null; }
         if (this.flashStatusText) { this.flashStatusText.destroy(); this.flashStatusText = null; }
         if (this.flashCooldownText) { this.flashCooldownText.destroy(); this.flashCooldownText = null; }
 
-        super.shutdown(); // 親クラスのshutdownを呼び出す
+        super.shutdown();
     }
 }
