@@ -14,7 +14,7 @@ const config = {
     width: CANVAS_WIDTH,
     height: CANVAS_HEIGHT,
     parent: 'phaser-game',
-    backgroundColor: '#0a141e', // 基本の背景色
+    backgroundColor: '#4a2c2a', // 基本の背景色
     physics: {
         default: 'arcade',
         arcade: {
