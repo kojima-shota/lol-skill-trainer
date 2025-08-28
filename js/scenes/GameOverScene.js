@@ -1,5 +1,5 @@
 // GameOverScene.js
-const DEFEAT_TEXT_COLOR = '#e84118';
+const FINISH_TEXT_COLOR = '#0000ff';
 
 export default class GameOverScene extends Phaser.Scene {
     constructor() {
@@ -14,7 +14,7 @@ export default class GameOverScene extends Phaser.Scene {
     create() {
         this.cameras.main.setBackgroundColor(this.game.config.backgroundColor || '#0a141e');
 
-        this.add.text(this.cameras.main.width / 2, this.cameras.main.height / 2 - 100, 'DEFEAT', { fontSize: '60px', fill: DEFEAT_TEXT_COLOR, fontFamily: 'Arial', fontStyle: 'bold' }).setOrigin(0.5);
+        this.add.text(this.cameras.main.width / 2, this.cameras.main.height / 2 - 100, 'FINISH', { fontSize: '60px', fill: FINISH_TEXT_COLOR, fontFamily: 'Arial', fontStyle: 'bold' }).setOrigin(0.5);
         this.add.text(this.cameras.main.width / 2, this.cameras.main.height / 2, `最終スコア: ${this.finalScore}`, { fontSize: '36px', fill: '#fff', fontFamily: 'Arial' }).setOrigin(0.5);
         this.add.text(this.cameras.main.width / 2, this.cameras.main.height / 2 + 70, "「R」キーでリスタート", { fontSize: '24px', fill: '#fff', fontFamily: 'Arial' }).setOrigin(0.5);
 
