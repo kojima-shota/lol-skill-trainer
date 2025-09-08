@@ -7,23 +7,19 @@ export default class UIScene extends Phaser.Scene {
         this.flashStatusText = null;
         this.currentFlashCooldown = 0;
         
-        // ★★★ ハンドラプロパティは不要になるので削除しても良いが、残しても害はない
         this.updateScoreHandler = null;
         this.flashUsedHandler = null;
         this.flashReadyHandler = null;
 
         this.cooldownDisplayTimer = null;
         
-        // ★★★ GameSceneとの接続が完了したかどうかのフラグ ★★★
-        this.isListenersSetup = false;
+         this.isListenersSetup = false;
     }
 
     create() {
         console.log("UIScene created.");
-        // isListenersSetup フラグをリセット
-        this.isListenersSetup = false;
+         this.isListenersSetup = false;
 
-        // --- UI要素の作成 ---
         this.scoreText = this.add.text(20, 20, 'スコア: 0', {
             fontSize: '28px', fill: '#fff', fontFamily: 'Arial'
         });
@@ -34,7 +30,6 @@ export default class UIScene extends Phaser.Scene {
             fontSize: '18px', fill: '#ff0', fontFamily: 'Arial'
         }).setOrigin(1, 0);
 
-        // --- クールダウン表示用タイマー ---
         if (this.cooldownDisplayTimer) {
             this.cooldownDisplayTimer.destroy();
         }
@@ -46,29 +41,22 @@ export default class UIScene extends Phaser.Scene {
         });
     }
 
-    // ★★★ update メソッドを追加 ★★★
     update(time, delta) {
-        // まだリスナーがセットアップされていなければ、セットアップを試みる
         if (!this.isListenersSetup) {
             this.setupGameEventListeners();
         }
         
-        // クールダウン表示の更新はここで行っても良いが、タイマーでもOK
-        // this.updateFlashCooldown();
     }
 
     setupGameEventListeners() {
-        // GameScene が取得できるか確認
         const gameScene = this.scene.get('GameScene');
 
-        // GameScene がまだ準備できていない、または既にセットアップ済みなら何もしない
         if (!gameScene || !gameScene.scene.isActive() || this.isListenersSetup) {
             return;
         }
 
         console.log("UIScene: GameScene is active, setting up event listeners.");
 
-        // --- リスナーを登録 ---
         gameScene.events.on('updateScore', (score) => {
             if (this.scoreText) {
                 this.scoreText.setText(`スコア: ${score}`);
@@ -93,40 +81,32 @@ export default class UIScene extends Phaser.Scene {
             this.currentFlashCooldown = 0;
         }, this);
 
-        // ★★★ セットアップが完了したことをフラグで記録 ★★★
         this.isListenersSetup = true;
 
-        // ★★★ 最初のスコアを即時反映 ★★★
         if (this.scoreText) {
             this.scoreText.setText(`スコア: ${gameScene.score}`);
         }
     }
 
     updateFlashCooldown() {
-        // ... (変更なし) ...
     }
 
     updateFlashCooldownText() {
-        // ... (変更なし) ...
     }
 
     shutdown() {
         console.log("UIScene shutdown");
         const gameScene = this.scene.get('GameScene');
 
-        // shutdown時には、gameSceneがまだ存在すればリスナーを解除しようと試みる
-        // ただし、GameSceneが先に破棄されることもあるので、エラーチェックは重要
         if (gameScene && gameScene.events) {
-            // 全てのイベントリスナーを解除する方が確実
             gameScene.events.off('updateScore');
             gameScene.events.off('flashUsed');
             gameScene.events.off('flashReady');
         }
         
-        // ... (他のクリーンアップ処理は変更なし) ...
         if (this.cooldownDisplayTimer) { /* ... */ }
         if (this.scoreText) { /* ... */ }
-        // ...
+       
         super.shutdown();
     }
 }

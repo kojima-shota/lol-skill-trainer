@@ -29,7 +29,6 @@ export default class Enemy extends Phaser.Physics.Arcade.Sprite {
         this.body.setCollideWorldBounds(true).setBounce(1);
         this.setDisplaySize(40, 40);
 
-        // --- 色付きテクスチャの生成と適用 ---
         this.originalTextureKey = `enemy_${FIXED_ENEMY_COLOR.toString(16)}`;
         if (!this.scene.textures.exists(this.originalTextureKey)) {
             console.log(`Creating new texture: ${this.originalTextureKey}`);
@@ -60,8 +59,7 @@ export default class Enemy extends Phaser.Physics.Arcade.Sprite {
         this.canCastSkill = false;
         if(this.body) this.body.setVelocity(0,0);
 
-        // --- 詠唱中テクスチャに切り替え ---
-        const castingTextureKey = 'enemy_casting_red'; // 詠唱色は赤
+        const castingTextureKey = 'enemy_casting_red';
         if (!this.scene.textures.exists(castingTextureKey)) {
             const castingGraphics = this.scene.make.graphics({ fillStyle: { color: 0xff0000 } });
             castingGraphics.fillCircle(ENEMY_VISUAL_SIZE, ENEMY_VISUAL_SIZE, ENEMY_VISUAL_SIZE);
@@ -89,7 +87,6 @@ export default class Enemy extends Phaser.Physics.Arcade.Sprite {
         if (!this.active || !this.bulletsGroup) return;
         console.log("[Enemy.js] Enemy casts skill!");
         
-        // ★★★ 弾のインスタンスを手動で作成し、グループに追加 ★★★
         const skillBullet = new Bullet(this.scene, 0, 0);
         this.bulletsGroup.add(skillBullet, true);
 
@@ -102,7 +99,6 @@ export default class Enemy extends Phaser.Physics.Arcade.Sprite {
         }
     }
 
-    // ★★★ 直線弾を発射するメソッド ★★★
     fireStraightBullet(bullet) {
         console.log("[Enemy.js] -> Firing a STRAIGHT bullet!");
         const bulletSize = 25;

@@ -14,7 +14,7 @@ export default class TitleScene extends Phaser.Scene {
 
         this.cameras.main.setBackgroundColor(this.game.config.backgroundColor || '#0a141e');
 
-        this.add.text(this.cameras.main.width / 2, this.cameras.main.height / 2 - 100, 'League skill micro', {
+        this.add.text(this.cameras.main.width / 2, this.cameras.main.height / 2 - 100, '反射神経テスト', {
             fontSize: '48px',
             fill: '#fff',
             fontFamily: 'Arial',
@@ -40,7 +40,6 @@ export default class TitleScene extends Phaser.Scene {
             console.error("TitleScene: startText is not defined for tweening!");
         }
 
-        // once を使ってリスナーを登録
         this.input.once('pointerdown', () => this.startGame(), this);
         this.input.keyboard.once('keydown-SPACE', () => this.startGame(), this);
         this.input.keyboard.once('keydown-ENTER', () => this.startGame(), this);
@@ -51,22 +50,18 @@ export default class TitleScene extends Phaser.Scene {
     startGame() {
         console.log("TitleScene: startGame called");
 
-        // onceで登録したので明示的な解除は不要だが、トゥイーンは止める
         if (this.startTextTween && this.startTextTween.isPlaying()) {
             this.startTextTween.stop();
         }
 
-        // ★★★ これが最も重要な修正点 ★★★
-        // UIScene も start で再起動する
         this.scene.start('GameScene');
-        this.scene.start('UIScene'); // launch ではなく start を使う
+        this.scene.start('UIScene'); 
 
-        this.scene.stop('TitleScene'); // 最後に自分を停止
+        this.scene.stop('TitleScene'); 
     }
 
     shutdown() {
         console.log("TitleScene shutdown");
-        // トゥイーンが残っていれば停止
         if (this.startTextTween) {
             this.startTextTween.stop();
             this.startTextTween = null;

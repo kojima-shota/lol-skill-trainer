@@ -1,8 +1,5 @@
 // js/scenes/Bullet.js
 
-// 分裂した子弾もBulletクラスなので、自分自身をインポートする必要はないが、
-// 循環参照を避けるためにも、他のクラスはインポートしないのが基本。
-// GameSceneのプロパティ(this.scene.bullets)経由で他の弾にアクセスする。
 
 export default class Bullet extends Phaser.Physics.Arcade.Sprite {
     constructor(scene, x, y) {
@@ -78,9 +75,7 @@ export default class Bullet extends Phaser.Physics.Arcade.Sprite {
         const childBulletColor = 0xffa500;
         const splitAngle = Math.PI / 8;
 
-        // 子弾を生成
-        for (let i = -1; i <= 1; i += 2) { // -1 と 1 でループ
-            // new Bullet() を使って、このファイル自身(Bulletクラス)のインスタンスを確実に作成する
+        for (let i = -1; i <= 1; i += 2) {
             const childBullet = new Bullet(this.scene, this.x, this.y);
             this.scene.bullets.add(childBullet, true); // GameSceneのbulletsグループに追加
 

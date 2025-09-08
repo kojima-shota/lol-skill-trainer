@@ -157,7 +157,6 @@ export default class GameScene extends Phaser.Scene {
     }
 
 
-    // ★★★ updateメソッドを修正 ★★★
     update(time, delta) {
         if (this.isGameOver) return;
         if (!this.player || !this.player.active) return;
@@ -173,7 +172,6 @@ export default class GameScene extends Phaser.Scene {
         }
     }
 
-    // ★★★ isBulletOffScreen メソッドは不要なので削除 ★★★
 
     performFlash() {
         if (this.isGameOver || !this.canFlash) return;
@@ -330,4 +328,3 @@ export default class GameScene extends Phaser.Scene {
     }
 }
 
-// このファイルには、これ以上クラス定義を追加しない
